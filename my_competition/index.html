@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>秒懂·预见 - 新一代AEB全程速度安全管家</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <!-- Chart.js（已移除图表，保留CDN防止其他功能冲突） -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#e6f1ff',
+                            100: '#cce3ff',
+                            200: '#99c7ff',
+                            300: '#66abff',
+                            400: '#338fff',
+                            500: '#165DFF',
+                            600: '#0e47cc',
+                            700: '#0b3a99',
+                            800: '#082e66',
+                            900: '#041733',
+                        },
+                        safety: {
+                            50: '#fff3e6',
+                            100: '#ffedd9',
+                            200: '#ffdbad',
+                            300: '#ffc980',
+                            400: '#ffb753',
+                            500: '#FF7D00',
+                            600: '#cc6400',
+                            700: '#994c00',
+                            800: '#663500',
+                            900: '#331d00',
+                        },
+                        dark: '#1D2129',
+                        light: '#F2F3F5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #165DFF, #FF7D00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #165DFF 0%, #0b3a99 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .tech-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(22, 93, 255, 0.1);
+        }
+        
+        .tech-card:hover {
+            border-color: #165DFF;
+            box-shadow: 0 0 15px rgba(22, 93, 255, 0.2);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #165DFF;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .active-nav::after {
+            width: 100%;
+        }
+        
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .ai-chat-container {
+            height: 400px;
+            overflow-y: auto;
+        }
+        
+        .ai-message, .user-message {
+            max-width: 80%;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border-radius: 20px;
+        }
+        
+        .ai-message {
+            background-color: #f0f7ff;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+        }
+        
+        .user-message {
+            background-color: #165DFF;
+            color: white;
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #165DFF;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            opacity: 0.6;
+            animation: typing 1.4s infinite both;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .desktop-menu {
+                display: none;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .desktop-menu {
+                display: flex;
+            }
+            
+            .mobile-menu {
+                display: none;
+            }
+        }
+        
+        /* 滚动动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 3D汽车容器（已删除模块，保留样式防止冲突，可后续删除） */
+        #car-3d-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        
+        /* 数据统计动画 */
+        .stat-number {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        /* 雷达扫描动画 */
+        .radar-scan {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(22, 93, 255, 0.2) 0%, rgba(22, 93, 255, 0) 70%);
+            overflow: hidden;
+        }
+        
+        .radar-scan::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 100px 100px 0 0;
+            border-color: rgba(22, 93, 255, 0.3) transparent transparent transparent;
+            transform-origin: bottom right;
+            animation: radar 2s linear infinite;
+        }
+        
+        @keyframes radar {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-light text-dark">
+    <!-- 导航栏 -->
+    <header class="fixed w-full top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-lg bg-primary-500 flex items-center justify-center text-white">
+                        <i class="fas fa-shield-alt text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold text-primary-500">秒懂·预见</span>
+                </a>
+                
+                <!-- 桌面端导航 -->
+                <nav class="desktop-menu items-center gap-8">
+                    <a href="#project" class="nav-link text-dark/80 hover:text-primary-500 transition-colors">项目介绍</a>
+                    <a href="#technology" class="nav-link text-dark/80 hover:text-primary-500 transition-colors">核心技术</a>
+                    <a href="#membership" class="nav-link text-dark/80 hover:text-primary-500 transition-colors">会员服务</a>
+                    <a href="#cooperation" class="nav-link text-dark/80 hover:text-primary-500 transition-colors">车企合作</a>
+                    <a href="#team" class="nav-link text-dark/80 hover:text-primary-500 transition-colors">团队介绍</a>
+                    <a href="#contact" class="px-6 py-2 bg-safety-500 text-white rounded-lg font-medium hover:bg-safety-600 transition-colors">联系我们</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="mobile-menu text-dark text-2xl">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="mobile-menu hidden mt-4 px-2 py-3 bg-white rounded-lg shadow-md">
+                <a href="#project" class="block py-2 px-4 text-dark/80 hover:bg-primary-50 hover:text-primary-500 rounded">项目介绍</a>
+                <a href="#technology" class="block py-2 px-4 text-dark/80 hover:bg-primary-50 hover:text-primary-500 rounded">核心技术</a>
+                <a href="#membership" class="block py-2 px-4 text-dark/80 hover:bg-primary-50 hover:text-primary-500 rounded">会员服务</a>
+                <a href="#cooperation" class="block py-2 px-4 text-dark/80 hover:bg-primary-50 hover:text-primary-500 rounded">车企合作</a>
+                <a href="#team" class="block py-2 px-4 text-dark/80 hover:bg-primary-50 hover:text-primary-500 rounded">团队介绍</a>
+                <a href="#contact" class="block py-2 px-4 mt-2 bg-safety-500 text-white rounded-lg text-center font-medium hover:bg-safety-600 transition-colors">联系我们</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 首屏英雄区 -->
+    <section class="relative min-h-screen flex items-center pt-20 overflow-hidden" id="hero">
+        <canvas id="hero-canvas"></canvas>
+        <div class="container mx-auto px-6 py-20 relative z-10">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <!-- 文字内容 -->
+                <div class="w-full md:w-1/2 space-y-8">
+                    <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight text-dark">
+                        每1毫秒，都在守护生命<br>
+                        <span class="gradient-text">全程速度安全管家</span><br>
+                        重构下一代AEB
+                    </h1>
+                    <p class="text-lg text-dark/70 max-w-lg">
+                        解决传统AEB误触发、"鬼探头"响应慢、恶劣天气失效痛点，零新增硬件成本，让主动安全惠及每一位车主
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="#membership" class="px-8 py-3 bg-safety-500 text-white rounded-lg font-medium shadow-lg shadow-safety-500/20 hover:bg-safety-600 transition-all transform hover:-translate-y-1">
+                            开通会员享服务
+                        </a>
+                        <a href="#cooperation" class="px-8 py-3 bg-white border border-primary-500 text-primary-500 rounded-lg font-medium hover:bg-primary-50 transition-all transform hover:-translate-y-1">
+                            车企合作咨询
+                        </a>
+                    </div>
+                    <!-- 数据标签 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
+                        <div class="bg-white p-4 rounded-lg shadow-md">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check-circle text-primary-500 text-xl"></i>
+                                <div>
+                                    <p class="font-bold text-xl">≥85%</p>
+                                    <p class="text-sm text-dark/60">"鬼探头"规避率</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-md">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-bolt text-primary-500 text-xl"></i>
+                                <div>
+                                    <p class="font-bold text-xl">≤80ms</p>
+                                    <p class="text-sm text-dark/60">响应时间</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-md">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-dollar-sign text-primary-500 text-xl"></i>
+                                <div>
+                                    <p class="font-bold text-xl">0</p>
+                                    <p class="text-sm text-dark/60">新增硬件成本</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            
+                <div class="w-full md:w-1/2 relative">
+                    <div class="bg-white rounded-2xl shadow-xl p-4 md:p-8 transform hover:scale-[1.02] transition-transform duration-500">
+                        <h3 class="text-lg font-semibold mb-4 text-center">搭载"秒懂·预见"系统的智能汽车</h3>
+                        <div class="w-full h-64 md:h-80 bg-gray-100 rounded-lg overflow-hidden relative">
+                            
+                            <video 
+                                controls  
+                                autoplay  
+                                muted     
+                                preload="auto"  
+                                style="width: 100%; height: 100%; object-fit: contain; object-position: top; transition: transform 0.7s ease;"
+                            >
+                                <!-- 提供多种视频格式，确保浏览器兼容性 -->
+                                <source src="v.mp4" type="video/mp4" alt="搭载秒懂·预见AEB系统的汽车">
+                            </video>
+                            
+                            <!-- 技术亮点标签 -->
+                            <div class="absolute top-6 right-6 bg-safety-500 text-white px-4 py-2 rounded-full text-sm shadow-lg transform hover:scale-110 transition-transform">
+                                85%+鬼探头规避率
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center text-sm text-dark/60">
+                            适配市面90%以上搭载ESP系统的车型，无需额外硬件改装
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 波浪底部装饰 -->
+        <div class="absolute bottom-0 left-0 w-full">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                <path fill="#ffffff" fill-opacity="1" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,202.7C672,203,768,181,864,181.3C960,181,1056,203,1152,202.7C1248,203,1344,181,1392,170.7L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- 项目介绍 -->
+    <section id="project" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">项目概述：从“被动避险”到“主动守护”</h2>
+                <p class="text-dark/70 text-lg">
+                    基于动态安全速度阈值的AEB系统优化方案，解决行业核心痛点，契合政策与市场双重需求
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 痛点卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-red-100 text-red-500 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">传统AEB痛点</h3>
+                    <ul class="space-y-2 text-dark/70">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-500 mt-1"></i>
+                            <span>低速误触发（如泊车场景），影响驾驶体验</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-500 mt-1"></i>
+                            <span>“鬼探头”场景规避率仅28%（C-NCAP 2024数据）</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-500 mt-1"></i>
+                            <span>雨雪湿滑路面制动力分配不当，易失控</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-times-circle text-red-500 mt-1"></i>
+                            <span>新增硬件成本高，难以普及至10-15万家用车</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 政策机遇卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-file-contract text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">政策与市场机遇</h3>
+                    <ul class="space-y-2 text-dark/70">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                            <span>C-NCAP 2024：AEB对弱势道路使用者识别纳入评分</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                            <span>2025年L2级以上自动驾驶渗透率将突破50%（工信部）</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                            <span>国内AEB优化方案潜在市场规模达52亿元（中汽研）</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-blue-500 mt-1"></i>
+                            <span>68%消费者愿为高级别主动安全功能支付溢价（麦肯锡）</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 项目价值卡片 -->
+                <div class="bg-white rounded-xl shadow-md p-6 card-hover border border-gray-100">
+                    <div class="w-12 h-12 bg-green-100 text-green-500 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-lightbulb text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">项目核心价值</h3>
+                    <ul class="space-y-2 text-dark/70">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-star text-green-500 mt-1"></i>
+                            <span>动态安全阈值：实时适配路面附着系数，避免误触发</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-star text-green-500 mt-1"></i>
+                            <span>仿生轮廓感知：“鬼探头”规避率提升至85%以上</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-star text-green-500 mt-1"></i>
+                            <span>零新增硬件：复用现有传感器，为车企降本300-500元/辆</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-star text-green-500 mt-1"></i>
+                            <span>四级分级干预：平衡安全与驾驶自由，提升用户接受度</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 项目对比 -->
+            <div class="mt-20 bg-gray-50 rounded-2xl p-8 shadow-md">
+                <h3 class="text-2xl font-semibold mb-8 text-center">传统AEB vs 秒懂·预见系统</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-white">
+                                <th class="p-4 text-left border-b-2 border-primary-500">对比项</th>
+                                <th class="p-4 text-left border-b-2 border-primary-500">传统AEB系统</th>
+                                <th class="p-4 text-left border-b-2 border-primary-500">秒懂·预见系统</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-200 hover:bg-white/50 transition-colors">
+                                <td class="p-4 font-medium">触发机制</td>
+                                <td class="p-4">固定TTC（碰撞时间）阈值</td>
+                                <td class="p-4 text-primary-500 font-medium">动态安全速度阈值，实时适配路况</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 hover:bg-white/50 transition-colors">
+                                <td class="p-4 font-medium">“鬼探头”规避率</td>
+                                <td class="p-4">28%（C-NCAP 2024数据）</td>
+                                <td class="p-4 text-primary-500 font-medium">≥85%（实测数据）</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 hover:bg-white/50 transition-colors">
+                                <td class="p-4 font-medium">响应时间</td>
+                                <td class="p-4">300-500ms</td>
+                                <td class="p-4 text-primary-500 font-medium">≤80ms</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 hover:bg-white/50 transition-colors">
+                                <td class="p-4 font-medium">硬件成本</td>
+                                <td class="p-4">新增激光雷达等硬件，成本高</td>
+                                <td class="p-4 text-primary-500 font-medium">零新增硬件，复用现有传感器</td>
+                            </tr>
+                            <tr class="border-b border-gray-200 hover:bg-white/50 transition-colors">
+                                <td class="p-4 font-medium">用户体验</td>
+                                <td class="p-4">误触发率高，用户接受度低</td>
+                                <td class="p-4 text-primary-500 font-medium">四级分级干预，平衡安全与体验</td>
+                            </tr>
+                            <tr class="hover:bg-white/50 transition-colors">
+                                <td class="p-4 font-medium">恶劣天气表现</td>
+                                <td class="p-4">雨雾天气性能下降明显</td>
+                                <td class="p-4 text-primary-500 font-medium">多传感器融合，抗干扰能力强</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心技术 -->
+    <section id="technology" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">核心技术：四大创新突破</h2>
+                <p class="text-dark/70 text-lg">
+                    以动态安全阈值为核心，融合仿生感知与分级干预，实现技术与成本的双重优势
+                </p>
+            </div>
+
+            <!-- 技术1：动态安全阈值（已修改，移除图表和表格） -->
+            <div class="flex flex-col md:flex-row items-center gap-12 mb-24">
+                <div class="w-full md:w-1/2 order-2 md:order-1">
+                    <h3 class="text-2xl font-semibold mb-4 text-primary-500">动态安全速度阈值</h3>
+                    <p class="text-dark/70 mb-6">
+                        摒弃传统固定TTC（碰撞时间）触发机制，通过实时计算路面附着系数μ，动态生成安全速度V<sub>safe</sub>，确保车辆在不同路况下均可安全刹停。
+                    </p>
+                    <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
+                        <p class="font-medium mb-2">核心公式：</p>
+                        <p class="text-primary-500 font-mono text-lg">V<sub>safe</sub> = √(2×a<sub>max</sub>×d) / 1.15</p>
+                        <p class="text-sm text-dark/60 mt-2">
+                            其中：a<sub>max</sub> = μ×g（μ为路面附着系数，g为重力加速度9.8m/s²），d为与前方障碍物距离
+                        </p>
+                    </div>
+                    <ul class="space-y-3 text-dark/70">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span>干燥路面（μ≈0.7-0.8）：允许更高安全速度，契合正常驾驶需求</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span>雨雪路面（μ≈0.2-0.3）：自动降低安全速度，提前预警控速</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span>移动障碍物：优化公式补偿相对速度，提升判断精度</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/2 order-1 md:order-2">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h4 class="text-lg font-semibold mb-4 text-center">不同路面安全速度计算</h4>
+                        <!-- 自定义参数计算安全速度（移除了图表，保留核心计算功能） -->
+                        <div class="bg-gray-50 p-6 rounded-lg">
+                            <h5 class="font-medium text-center mb-5">参数设置</h5>
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <div>
+                                    <label class="text-sm text-dark/70 block mb-2">动摩擦因数μ</label>
+                                    <input type="number" id="frictionCoeff" step="0.01" min="0.01" max="1.0" value="0.7" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none">
+                                    <div class="text-xs text-dark/50 mt-1">参考值：干燥0.7-0.8 | 雨天0.2-0.4 | 冰雪0.1-0.2</div>
+                                </div>
+                                <div>
+                                    <label class="text-sm text-dark/70 block mb-2">障碍物距离d(m)</label>
+                                    <input type="number" id="obstacleDist" step="1" min="10" max="200" value="100"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none">
+                                    <div class="text-xs text-dark/50 mt-1">常见范围：50-150米</div>
+                                </div>
+                            </div>
+                            <!-- 计算结果展示区 -->
+                            <div class="bg-white p-4 rounded-lg mb-4">
+                                <h5 class="font-medium text-center mb-3">计算结果</h5>
+                                <div class="text-center font-medium text-primary-500 text-2xl">
+                                    V<sub>safe</sub> = <span id="resultValue">0</span> km/h
+                                </div>
+                            </div>
+                            <button id="calcSafeSpeed" class="w-full py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors">
+                                立即计算
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 技术2：仿生轮廓感知 -->
+            <div class="flex flex-col md:flex-row items-center gap-12 mb-24">
+                <div class="w-full md:w-1/2">
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-6">
+                            <h4 class="text-lg font-semibold mb-4 text-center">仿生轮廓感知流程</h4>
+                            <div class="flex flex-col space-y-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0">1</div>
+                                    <div>
+                                        <h5 class="font-medium">图像轮廓提取</h5>
+                                        <p class="text-sm text-dark/70">Canny边缘检测算法，将摄像头图像转为二值化轮廓图</p>
+                                    </div>
+                                </div>
+                                <div class="w-full h-px bg-gray-200 mx-4"></div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0">2</div>
+                                    <div>
+                                        <h5 class="font-medium">轻量化CNN匹配</h5>
+                                        <p class="text-sm text-dark/70">30万参数模型，识别路边车辆间隙、绿化带缺口等高危轮廓</p>
+                                    </div>
+                                </div>
+                                <div class="w-full h-px bg-gray-200 mx-4"></div>
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-primary-500 text-white flex items-center justify-center flex-shrink-0">3</div>
+                                    <div>
+                                        <h5 class="font-medium">快速决策通道</h5>
+                                        <p class="text-sm text-dark/70">匹配度>85%时激活，雷达确认后80ms内完成紧急制动</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 p-4 text-center text-sm text-dark/60">
+                            较传统AEB（300-500ms）响应速度提升超60%
+                        </div>
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <h3 class="text-2xl font-semibold mb-4 text-primary-500">仿生轮廓感知：破解“鬼探头”难题</h3>
+                    <p class="text-dark/70 mb-6">
+                        模拟人类驾驶员“凭轮廓直觉判断风险”的视觉机制，专注于“高危场景识别”而非“物体分类”，大幅提升突发状况响应速度。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-lg shadow-sm text-center">
+                            <p class="text-sm text-dark/60 mb-1">传统AEB“鬼探头”规避率</p>
+                            <p class="text-3xl font-bold text-red-500">28%</p>
+                            <p class="text-xs text-dark/50">(C-NCAP 2024测试数据)</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm text-center">
+                            <p class="text-sm text-dark/60 mb-1">本项目规避率</p>
+                            <p class="text-3xl font-bold text-green-500">≥85%</p>
+                            <p class="text-xs text-dark/50">(实测数据)</p>
+                        </div>
+                    </div>
+                    <ul class="space-y-3 text-dark/70">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span>数据量优势：轮廓化数据量压缩24:1，降低训练与存储成本</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span>硬件适配：可在NVIDIA Jetson Nano等低成本嵌入式平台运行</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span>恶劣天气鲁棒性：融合毫米波雷达，抗雨雾干扰</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 技术3：四级分级干预 & 技术4：零新增硬件 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- 四级分级干预 -->
+                <div class="bg-white rounded-xl shadow-md p-8 tech-card">
+                    <div class="w-12 h-12 bg-safety-100 text-safety-500 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-sliders-h text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-primary-500">四级分级干预</h3>
+                    <p class="text-dark/70 mb-6">
+                        从“温和提醒”到“紧急制动”渐进式干预，既保障安全底线，又尊重驾驶员操作意图，降低“过度干预”抵触感。
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="p-3 text-left border-b">干预级别</th>
+                                    <th class="p-3 text-left border-b">触发条件</th>
+                                    <th class="p-3 text-left border-b">系统动作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">正常</td>
+                                    <td class="p-3 text-sm">V<sub>act</sub> ≤ 0.9×V<sub>safe</sub></td>
+                                    <td class="p-3 text-sm">无干预，仅显示安全阈值</td>
+                                </tr>
+                                <tr class="border-b bg-gray-50/50">
+                                    <td class="p-3 font-medium">1级（温和控速）</td>
+                                    <td class="p-3 text-sm">0.9×V<sub>safe</sub> ＜ V<sub>act</sub> ≤ V<sub>safe</sub></td>
+                                    <td class="p-3 text-sm">轻微降扭矩，仪表盘闪烁提醒</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3 font-medium">2级（强制控速）</td>
+                                    <td class="p-3 text-sm">V<sub>safe</sub> ＜ V<sub>act</sub> ＜ 1.1×V<sub>safe</sub></td>
+                                    <td class="p-3 text-sm">轻度制动（<30%最大制动力）+ 语音提醒</td>
+                                </tr>
+                                <tr class="bg-gray-50/50">
+                                    <td class="p-3 font-medium">3级（紧急制动）</td>
+                                    <td class="p-3 text-sm">V<sub>act</sub> ≥ 1.1×V<sub>safe</sub> 或 d快速减小</td>
+                                    <td class="p-3 text-sm">100%制动力紧急制动，无法Override</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 零新增硬件 -->
+                <div class="bg-white rounded-xl shadow-md p-8 tech-card">
+                    <div class="w-12 h-12 bg-green-100 text-green-500 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-cogs text-xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-primary-500">零新增硬件：低成本普及关键</h3>
+                    <p class="text-dark/70 mb-6">
+                        完全复用车辆现有传感器与控制单元，仅通过算法迭代实现功能升级，为车企降低硬件成本，加速技术普及。
+                    </p>
+                    <div class="space-y-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-medium">传感器融合</h5>
+                                <p class="text-sm text-dark/70">复用高清摄像头（轮廓提取）、毫米波雷达（抗雨雾）、激光雷达（±5cm测距精度）</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-medium">控制单元复用</h5>
+                                <p class="text-sm text-dark/70">基于现有ESP系统获取轮速、制动压力数据，计算路面附着系数μ</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-medium">软件升级模式</h5>
+                                <p class="text-sm text-dark/70">通过OTA远程升级算法，无需硬件改装，降低售后成本</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-green-700 font-medium">成本优势：</p>
+                        <p class="text-dark/70 mt-1">为车企节省单车300-500元硬件成本（德勤2023数据），特别适配10-15万元主流家用车型</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 会员服务 -->
+    <section id="membership" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">会员服务：持续升级的安全体验</h2>
+                <p class="text-dark/70 text-lg">
+                    采用“基础功能+增值服务”订阅模式，为车主提供个性化、场景化的主动安全保障
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <!-- 免费版 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border-t-4 border-gray-300 transform hover:scale-105 transition-transform duration-300">
+                    <div class="p-8">
+                        <h3 class="text-xl font-semibold mb-2">基础版</h3>
+                        <p class="text-dark/60 mb-6">免费体验核心安全功能</p>
+                        <div class="mb-8">
+                            <span class="text-4xl font-bold">¥0</span>
+                            <span class="text-dark/60">/永久</span>
+                        </div>
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">动态安全速度阈值基础计算</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">四级分级干预基础模式</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">常规路况（干燥/雨天）适配</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-gray-400">
+                                <i class="fas fa-times mt-1"></i>
+                                <span>“鬼探头”场景高级识别</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-gray-400">
+                                <i class="fas fa-times mt-1"></i>
+                                <span>个性化驾驶习惯学习</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-gray-400">
+                                <i class="fas fa-times mt-1"></i>
+                                <span>季度场景库更新</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block w-full py-3 border border-primary-500 text-primary-500 rounded-lg text-center font-medium hover:bg-primary-50 transition-colors">
+                            免费激活
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 年度会员 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden border-t-4 border-safety-500 transform md:scale-105 z-10 relative">
+                    <div class="bg-safety-500 text-white text-center py-2 text-sm font-medium">
+                        最受欢迎
+                    </div>
+                    <div class="p-8">
+                        <h3 class="text-xl font-semibold mb-2">年度安全会员</h3>
+                        <p class="text-dark/60 mb-6">全方位主动安全保障</p>
+                        <div class="mb-8">
+                            <span class="text-4xl font-bold">¥19</span>
+                            <span class="text-dark/60">/年</span>
+                        </div>
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">基础版全部功能</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">“鬼探头”场景高级识别（85%+规避率）</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">冰雪/雾天等极端路况适配</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">个性化驾驶习惯学习（减少误干预）</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">季度高风险场景库更新（如庙会人流）</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">驾驶行为安全报告（月度）</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block w-full py-3 bg-safety-500 text-white rounded-lg text-center font-medium shadow-md shadow-safety-500/20 hover:bg-safety-600 transition-colors">
+                            立即开通
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 终身会员 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden border-t-4 border-primary-500 transform hover:scale-105 transition-transform duration-300">
+                    <div class="p-8">
+                        <h3 class="text-xl font-semibold mb-2">终身安全会员</h3>
+                        <p class="text-dark/60 mb-6">终身享受顶级安全服务</p>
+                        <div class="mb-8">
+                            <span class="text-4xl font-bold">¥99</span>
+                            <span class="text-dark/60">/终身</span>
+                        </div>
+                        <ul class="space-y-4 mb-8">
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">年度会员全部功能</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">优先体验新功能（如夜间动物识别）</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">专属客服1对1技术支持</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">车辆安全状态远程诊断</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">免费参与用户共创测试（享奖励）</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fas fa-check text-green-500 mt-1"></i>
+                                <span class="text-dark/70">家庭成员账号共享（最多3人）</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block w-full py-3 border border-primary-500 text-primary-500 rounded-lg text-center font-medium hover:bg-primary-50 transition-colors">
+                            立即开通
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 会员权益说明 -->
+            <div class="bg-white rounded-xl shadow-md p-8 max-w-4xl mx-auto">
+                <h3 class="text-2xl font-semibold mb-6 text-center">会员服务常见问题</h3>
+                <div class="space-y-6">
+                    <div>
+                        <button class="faqBtn w-full flex justify-between items-center text-left font-medium">
+                            <span>如何激活会员服务？</span>
+                            <i class="fas fa-chevron-down text-primary-500 transition-transform"></i>
+                        </button>
+                        <div class="faqContent mt-2 text-dark/70 hidden">
+                            <p>1. 下载“秒懂·预见”车主APP，注册并绑定车辆（支持市面90%以上搭载ESP系统的车型）；</p>
+                            <p>2. 购买会员后，系统将自动发送激活码至APP；</p>
+                            <p>3. 在APP“我的会员”页面输入激活码，完成激活（激活后立即生效）。</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-px bg-gray-200"></div>
+                    <div>
+                        <button class="faqBtn w-full flex justify-between items-center text-left font-medium">
+                            <span>会员服务是否支持多车辆使用？</span>
+                            <i class="fas fa-chevron-down text-primary-500 transition-transform"></i>
+                        </button>
+                        <div class="faqContent mt-2 text-dark/70 hidden">
+                            <p>基础版与年度会员支持1个车辆绑定；终身会员支持最多3个车辆绑定（需在APP“家庭成员管理”中添加车辆信息，每个车辆独立享受会员服务）。</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-px bg-gray-200"></div>
+                    <div>
+                        <button class="faqBtn w-full flex justify-between items-center text-left font-medium">
+                            <span>场景库更新包含哪些内容？</span>
+                            <i class="fas fa-chevron-down text-primary-500 transition-transform"></i>
+                        </button>
+                        <div class="faqContent mt-2 text-dark/70 hidden">
+                            <p>场景库更新基于全国车主真实行车数据（匿名化处理），每季度更新1次，包含：</p>
+                            <p>1. 季节性高风险场景（如春节庙会人流、冬季冰雪桥面）；</p>
+                            <p>2. 区域性特殊场景（如学校区域上下学时段、景区拥堵路段）；</p>
+                            <p>3. 新型障碍物识别（如施工区域临时围挡、掉落货物）。</p>
+                        </div>
+                    </div>
+                    <div class="w-full h-px bg-gray-200"></div>
+                    <div>
+                        <button class="faqBtn w-full flex justify-between items-center text-left font-medium">
+                            <span>如果车辆更换，会员能否转移？</span>
+                            <i class="fas fa-chevron-down text-primary-500 transition-transform"></i>
+                        </button>
+                        <div class="faqContent mt-2 text-dark/70 hidden">
+                            <p>支持会员转移，每年可申请1次车辆绑定变更：</p>
+                            <p>1. 在APP“我的会员”页面提交“车辆变更申请”，上传新车辆行驶证照片；</p>
+                            <p>2. 客服审核通过后（1-2个工作日），会员权益将转移至新车辆；</p>
+                            <p>3. 原车辆会员权益立即失效，新车辆激活后生效。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 车企合作 -->
+    <section id="cooperation" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">车企合作：共建下一代主动安全生态</h2>
+                <p class="text-dark/70 text-lg">
+                    提供“标准化模块+定制化服务”，助力车企快速落地高级别AEB功能，降低研发成本与周期
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6 text-primary-500">合作模式</h3>
+                    <div class="space-y-8">
+                        <!-- 模式1：标准化模块授权 -->
+                        <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-primary-100 text-primary-500 flex items-center justify-center">
+                                    <i class="fas fa-cubes"></i>
+                                </div>
+                                <h4 class="text-xl font-semibold">标准化模块授权</h4>
+                            </div>
+                            <p class="text-dark/70 mb-4">
+                                提供全套AEB优化算法模块（动态安全阈值、仿生轮廓感知、四级分级干预），车企可直接集成至现有车载系统。
+                            </p>
+                            <ul class="space-y-2 text-dark/70">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check text-green-500 mt-1"></i>
+                                    <span>授权方式：按车型年销量收费（￥30/车）</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check text-green-500 mt-1"></i>
+                                    <span>交付内容：算法SDK、仿真测试工具链、HIL验证方案</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check text-green-500 mt-1"></i>
+                                    <span>适配周期：6个月内完成单车型集成（行业平均9-12个月）</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- 模式2：定制化服务 -->
+                        <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-10 h-10 rounded-full bg-primary-100 text-primary-500 flex items-center justify-center">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </div>
+                                <h4 class="text-xl font-semibold">定制化服务</h4>
+                            </div>
+                            <p class="text-dark/70 mb-4">
+                                针对高端车型或特殊场景（如商用车、无人配送车），提供个性化算法优化与功能定制。
+                            </p>
+                            <ul class="space-y-2 text-dark/70">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check text-green-500 mt-1"></i>
+                                    <span>定制方向：学校区域自动降速、夜间动物识别、商用车长距离制动优化</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check text-green-500 mt-1"></i>
+                                    <span>收费模式：项目制收费（根据定制复杂度，￥50-200万/项目）</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-check text-green-500 mt-1"></i>
+                                    <span>增值服务：联合申报技术专利、共同参与行业标准制定</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6 text-primary-500">合作优势</h3>
+                    <div class="bg-white p-8 rounded-xl shadow-md h-full">
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-green-100 text-green-500 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <i class="fas fa-money-bill-wave text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold mb-2">成本优势</h4>
+                                    <p class="text-dark/70">
+                                        零新增硬件，复用现有传感器与ESP系统，为车企降低单车300-500元硬件成本（德勤2023数据），提升车型性价比竞争力。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-blue-100 text-blue-500 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <i class="fas fa-tachometer-alt text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold mb-2">性能优势</h4>
+                                    <p class="text-dark/70">
+                                        “鬼探头”场景规避率≥85%（传统AEB仅28%），响应时间≤80ms，满足C-NCAP 2024与Euro NCAP 2025最高安全标准，助力车型获取高安全评分。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-purple-100 text-purple-500 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <i class="fas fa-clock text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold mb-2">效率优势</h4>
+                                    <p class="text-dark/70">
+                                        依托“云仿真+实车验证”双轨开发模式，90%场景测试在python+CARLA平台完成，单个车型适配周期仅6个月，较行业平均缩短50%。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-orange-100 text-orange-500 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <i class="fas fa-shield-alt text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-lg font-semibold mb-2">知识产权保障</h4>
+                                    <p class="text-dark/70">
+                                        核心算法已完成专利布局（发明专利2项、实用新型专利3项），提供完整FTO（自由实施分析）报告，规避侵权风险。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 合作咨询表单 -->
+            <div class="bg-white rounded-xl shadow-md p-8 max-w-4xl mx-auto">
+                <h3 class="text-2xl font-semibold mb-6 text-center">合作咨询</h3>
+                <form id="coopForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="companyName" class="block text-sm font-medium text-dark/80 mb-2">企业名称</label>
+                            <input type="text" id="companyName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors" placeholder="请输入企业全称" required>
+                        </div>
+                        <div>
+                            <label for="contactName" class="block text-sm font-medium text-dark/80 mb-2">联系人</label>
+                            <input type="text" id="contactName" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors" placeholder="请输入联系人姓名" required>
+                        </div>
+                        <div>
+                            <label for="contactPhone" class="block text-sm font-medium text-dark/80 mb-2">联系电话</label>
+                            <input type="tel" id="contactPhone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors" placeholder="请输入手机号码" required>
+                        </div>
+                        <div>
+                            <label for="coopType" class="block text-sm font-medium text-dark/80 mb-2">合作类型</label>
+                            <select id="coopType" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors" required>
+                                <option value="">请选择合作类型</option>
+                                <option value="standard">标准化模块授权</option>
+                                <option value="custom">定制化服务</option>
+                                <option value="joint">联合研发</option>
+                                <option value="other">其他合作</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="coopDesc" class="block text-sm font-medium text-dark/80 mb-2">合作需求描述</label>
+                        <textarea id="coopDesc" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-colors" placeholder="请简要描述您的合作需求（如车型、定制功能等）" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-primary-500 text-white rounded-lg font-medium shadow-md shadow-primary-500/20 hover:bg-primary-600 transition-colors">
+                        提交咨询
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+<!-- 团队介绍 -->
+<section id="team" class="py-20 bg-gray-50">
+    <div class="container mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">团队介绍：跨学科创新力量</h2>
+            <p class="text-dark/70 text-lg">
+                由山东大学多专业学生组成，依托顶级科研资源，兼具技术研发、市场运营与合规能力
+            </p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-8 mb-16 max-w-4xl mx-auto">
+        <h3 class="text-2xl font-semibold mb-6 text-center">指导老师</h3>
+        
+        <!-- 头像移至模块上方，居中显示 -->
+        <div class="flex justify-center mb-8">
+            <div class="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-primary-100 teacher-avatar">
+                <img src="tp0(1).png" alt="蒋超亚老师" class="w-full h-full object-cover">
+            </div>
+        </div>
+
+        <!-- 老师信息内容（保持原有布局，适配头像上移后的间距） -->
+        <div class="w-full space-y-6">
+            <h4 class="text-xl font-semibold text-center md:text-left">蒋超亚 研究员</h4>
+            
+            <p class="text-dark/70 leading-relaxed">
+                山东大学控制科学工程学院研究员，山东省泰山学者青年专家。本科毕业于南京大学计算机科学与技术系，硕士/博士毕业于北京大学王选计算机研究所、软件工程国家工程研究中心。
+            </p>
+
+            <div class="space-y-2">
+                <p class="font-medium">研究方向：</p>
+                <ul class="flex flex-wrap gap-2 text-sm text-dark/70">
+                    <li class="bg-primary-50 px-3 py-1 rounded-full">多模态大模型推理增强</li>
+                    <li class="bg-primary-50 px-3 py-1 rounded-full">大模型智能体（Agent）</li>
+                    <li class="bg-primary-50 px-3 py-1 rounded-full">新能源垂域大模型开发</li>
+                </ul>
+            </div>
+
+            <div class="space-y-2">
+                <p class="font-medium">成果与荣誉：</p>
+                <ul class="space-y-1 text-dark/70">
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-award text-yellow-500 mt-1"></i>
+                        <span>主持国家自然科学基金、山东省重点研发计划等项目</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-award text-yellow-500 mt-1"></i>
+                        <span>获2023年北京市科技进步一等奖、北京大学校长奖</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i class="fas fa-award text-yellow-500 mt-1"></i>
+                        <span>在NeurIPS、CVPR、ICCV等CCF-A类会议发表论文数十篇</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+        <!-- 核心成员 -->
+        <h3 class="text-2xl font-semibold mb-8 text-center">核心成员</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- 刘凌雨（项目负责人） -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="w-32 h-32 mx-auto mt-6 rounded-full overflow-hidden border-4 border-primary-100">
+                    <img src="tp1(1).png" alt="刘凌雨" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold mb-1">刘凌雨</h4>
+                    <p class="text-primary-500 font-medium mb-4">项目负责人</p>
+                    <p class="text-sm text-dark/60 mb-4">山东大学软件园校区计算机类（书院）2025级本科生</p>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm font-medium mb-1">获奖经历：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 中学生科普科幻作文大赛国家级一等奖</li>
+                                <li>• 山东大学第三届未来科技与人文大赛银奖、铜奖</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium mb-1">负责工作：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 组织团队协调分工，主导项目方案设计</li>
+                                <li>• 搭建项目仿真测试平台</li>
+                                <li>• 对接指导老师，完善项目成果</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 王梓萱（核心成员） -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="w-32 h-32 mx-auto mt-6 rounded-full overflow-hidden border-4 border-primary-100">
+                    <img src="tp2(1).png" alt="王梓萱" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold mb-1">王梓萱</h4>
+                    <p class="text-primary-500 font-medium mb-4">核心成员</p>
+                    <p class="text-sm text-dark/60 mb-4">山东大学软件园校区计算机类（书院）2025级本科生</p>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm font-medium mb-1">擅长领域：</p>
+                            <p class="text-sm text-dark/70">AEB系统问题分析与个性化解决方案设计</p>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium mb-1">负责工作：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 募集跨专业队员，保障团队多元化</li>
+                                <li>• 补充项目方案针对性观点</li>
+                                <li>• 收集资料、整理数据，处理事务性工作</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 缪天宇（核心成员） -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="w-32 h-32 mx-auto mt-6 rounded-full overflow-hidden border-4 border-primary-100">
+                    <img src="tp3(1).png" alt="缪天宇" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold mb-1">缪天宇</h4>
+                    <p class="text-primary-500 font-medium mb-4">核心成员</p>
+                    <p class="text-sm text-dark/60 mb-4">山东大学（威海）商学院经济学类2025级本科生</p>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm font-medium mb-1">获奖经历：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 第二十一届外研社"国才杯"综合能力&笔译校级银奖</li>
+                                <li>• 第十九届外研社杯演讲比赛江苏省一等奖</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium mb-1">负责工作：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 制作商业计划书，设计产品落地方案</li>
+                                <li>• 数据整理与项目经济发展规划</li>
+                                <li>• 对接政府补贴与融资资源</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 刘梓涵（核心成员） -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="w-32 h-32 mx-auto mt-6 rounded-full overflow-hidden border-4 border-primary-100">
+                    <img src="tp4(1).png" alt="刘梓涵" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold mb-1">刘梓涵</h4>
+                    <p class="text-primary-500 font-medium mb-4">核心成员</p>
+                    <p class="text-sm text-dark/60 mb-4">山东大学中心校区新闻传播学院24级新闻学本科生</p>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm font-medium mb-1">获奖经历：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 优秀学生奖三等奖</li>
+                                <li>• 第三届山东大学大学生新文科实践创新大赛银奖（负责人）</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium mb-1">负责工作：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 制定团队宣传策略，制作宣传视频</li>
+                                <li>• 梳理项目PPT思路与框架搭建</li>
+                                <li>• 运营社交媒体账号，提升项目知名度</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 刘昕瑜（项目成员） -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="w-32 h-32 mx-auto mt-6 rounded-full overflow-hidden border-4 border-primary-100">
+                    <img src="tp5(1).png" alt="刘昕瑜" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold mb-1">刘昕瑜</h4>
+                    <p class="text-primary-500 font-medium mb-4">项目成员</p>
+                    <p class="text-sm text-dark/60 mb-4">山东大学中心校区公共卫生学院大一学生</p>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm font-medium mb-1">获奖经历：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 外研社杯山东省一等奖</li>
+                                <li>• 语文报杯全国一等奖</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium mb-1">负责工作：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• PPT制作与素材整理</li>
+                                <li>• 协助撰写商业计划书</li>
+                                <li>• 整理项目文档与报告</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 王可欣（项目成员） -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden card-hover">
+                <div class="w-32 h-32 mx-auto mt-6 rounded-full overflow-hidden border-4 border-primary-100">
+                    <img src="tp6(1).png" alt="王可欣" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h4 class="text-xl font-semibold mb-1">王可欣</h4>
+                    <p class="text-primary-500 font-medium mb-4">项目成员</p>
+                    <p class="text-sm text-dark/60 mb-4">山东大学青岛校区法学院大一学生</p>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <p class="text-sm font-medium mb-1">获奖经历：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 深圳市物理小课题设计市级奖项</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium mb-1">负责工作：</p>
+                            <ul class="text-sm text-dark/70 space-y-1">
+                                <li>• 检索知识产权相关法律法规与政策文件</li>
+                                <li>• 为项目专利申请提供法律支撑</li>
+                                <li>• 审核合同与合规文件</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 吕少聪（技术支持）- 已删除图片框 -->
+        <div class="bg-white rounded-xl shadow-md p-8 mt-12 max-w-4xl mx-auto">
+            <div class="w-full space-y-4">
+                <h4 class="text-xl font-semibold">吕少聪 博士</h4>
+                <p class="text-primary-500 font-medium">技术支持</p>
+                <p class="text-dark/70">
+                    山东大学软件园校区集成电路学院2021级博士生，专注于车载硬件与嵌入式系统研究，为项目提供硬件技术支持与系统性能测算。
+                </p>
+                <div>
+                    <p class="font-medium mb-2">核心贡献：</p>
+                    <ul class="flex flex-wrap gap-2 text-sm text-dark/70">
+                        <li class="bg-primary-50 px-3 py-1 rounded-full">提供硬件技术信息支持</li>
+                        <li class="bg-primary-50 px-3 py-1 rounded-full">测算系统反应时间</li>
+                        <li class="bg-primary-50 px-3 py-1 rounded-full">嵌入式平台适配指导</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    <!-- 联系我们 -->
+    <section id="contact" class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">联系我们</h2>
+                <p class="text-dark/70 text-lg">
+                    无论您是车主、车企合作伙伴还是投资者，我们都期待与您沟通交流
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 联系方式 -->
+                <div class="bg-gray-50 rounded-xl p-8">
+                    <div class="w-12 h-12 bg-primary-100 text-primary-500 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-phone-alt text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">电话咨询</h3>
+                    <p class="text-dark/70 mb-6">
+                        工作时间：周一至周五 9:00-18:00
+                    </p>
+                    <p class="text-xl font-bold text-primary-500">15315762085</p>
+                </div>
+
+                <!-- 邮箱 -->
+                <div class="bg-gray-50 rounded-xl p-8">
+                    <div class="w-12 h-12 bg-primary-100 text-primary-500 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-envelope text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">邮箱咨询</h3>
+                    <p class="text-dark/70 mb-6">
+                        我们将在1-2个工作日内回复您的邮件
+                    </p>
+                    <p class="text-xl font-bold text-primary-500">202500550455@mail.sdu.edu</p>
+                </div>
+
+                <!-- 地址 -->
+                <div class="bg-gray-50 rounded-xl p-8">
+                    <div class="w-12 h-12 bg-primary-100 text-primary-500 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fas fa-map-marker-alt text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">办公地址</h3>
+                    <p class="text-dark/70 mb-6">
+                        欢迎前来参观交流
+                    </p>
+                    <p class="text-lg font-medium">山东省济南市历城区舜华路1500号山东大学软件园校区</p>
+                </div>
+            </div>
+
+            <!-- 地图 -->
+            <div class="mt-16 bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                <div class="h-96 bg-gray-200 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-map-marked-alt text-4xl text-primary-500 mb-4"></i>
+                         <img src="map.png" alt="地图加载中" class="w-full h-full object-cover">
+                        <p class="text-dark/60 mt-2">山东省济南市历城区舜华路1500号山东大学软件园校区</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12 px-6">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-primary-500">
+                            <i class="fas fa-shield-alt text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold">秒懂·预见</span>
+                    </div>
+                    <p class="text-white/70 mb-6">
+                        重构下一代AEB系统，打造全程速度安全管家，让每一次出行都安心。
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                            <i class="fab fa-weixin"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                            <i class="fab fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary-500 transition-colors">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#project" class="text-white/70 hover:text-white transition-colors">项目介绍</a></li>
+                        <li><a href="#technology" class="text-white/70 hover:text-white transition-colors">核心技术</a></li>
+                        <li><a href="#membership" class="text-white/70 hover:text-white transition-colors">会员服务</a></li>
+                        <li><a href="#cooperation" class="text-white/70 hover:text-white transition-colors">车企合作</a></li>
+                        <li><a href="#team" class="text-white/70 hover:text-white transition-colors">团队介绍</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-6">法律信息</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-white/70 hover:text-white transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-white/70 hover:text-white transition-colors">用户协议</a></li>
+                        <li><a href="#" class="text-white/70 hover:text-white transition-colors">知识产权声明</a></li>
+                        <li><a href="#" class="text-white/70 hover:text-white transition-colors">免责声明</a></li>
+                    </ul>
+                </div>
+                
+                
+            </div>
+            
+            <div class="pt-8 border-t border-white/10 text-center text-white/50 text-sm">
+                <p>© 2025 秒懂·预见 版权所有 | 鲁ICP备12345678号-1</p>
+                <p class="mt-2">本产品符合GB/T 39263-2020《汽车事件数据记录系统》标准</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 bg-primary-500 text-white rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all duration-300">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.remove('shadow-sm');
+            } else {
+                navbar.classList.remove('shadow-md');
+                navbar.classList.add('shadow-sm');
+            }
+        });
+
+        // 移动端菜单切换
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const icon = mobileMenuButton.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.replace('fa-bars', 'fa-times');
+            } else {
+                icon.classList.replace('fa-times', 'fa-bars');
+            }
+        });
+
+        // FAQ折叠面板
+        const faqBtns = document.querySelectorAll('.faqBtn');
+        faqBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const content = btn.nextElementSibling;
+                const icon = btn.querySelector('i');
+                
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+        // 安全速度对比图表
+        const speedChart = new Chart(
+            document.getElementById('speedChart'),
+            {
+                type: 'bar',
+                data: {
+                    labels: ['50m距离', '100m距离', '150m距离'],
+                    datasets: [
+                        {
+                            label: '干燥路面 (μ=0.8)',
+                            data: [60, 85, 105],
+                            backgroundColor: 'rgba(22, 93, 255, 0.8)',
+                        },
+                        {
+                            label: '雨天路面 (μ=0.4)',
+                            data: [42, 60, 73],
+                            backgroundColor: 'rgba(22, 93, 255, 0.5)',
+                        },
+                        {
+                            label: '冰雪路面 (μ=0.2)',
+                            data: [30, 42, 52],
+                            backgroundColor: 'rgba(22, 93, 255, 0.3)',
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + ' km/h';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '安全速度 (km/h)'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        
+        // 安全速度计算功能
+        document.getElementById('calcSafeSpeed').addEventListener('click', function() {
+            const frictionCoeff = parseFloat(document.getElementById('frictionCoeff').value);
+            const obstacleDist = parseFloat(document.getElementById('obstacleDist').value);
+            
+            // 计算安全速度
+            // V_safe = √(2×a_max×d) / 1.15
+            // a_max = μ×g (g=9.8m/s²)
+            const g = 9.8; // 重力加速度
+            const aMax = frictionCoeff * g;
+            const vSafeMps = Math.sqrt(2 * aMax * obstacleDist);
+            const vSafeKmh = vSafeMps * 3.6 / 1.15; // 转换为km/h并除以1.15
+            
+            // 显示结果
+            document.getElementById('resultValue').textContent = vSafeKmh.toFixed(1);
+            
+            // 自动显示结果区域（如果之前隐藏）
+            document.getElementById('speedResult').classList.remove('hidden');
+        });
+        
+        // 页面加载时自动计算一次默认值
+        window.addEventListener('load', function() {
+            document.getElementById('calcSafeSpeed').click();
+        });
+
+        // 合作表单提交
+        const coopForm = document.getElementById('coopForm');
+        coopForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('感谢您的咨询！我们的商务团队将在1-2个工作日内与您联系。');
+            coopForm.reset();
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = mobileMenuButton.querySelector('i');
+                        icon.classList.replace('fa-times', 'fa-bars');
+                    }
+                }
+            });
+        });
+
+        // 滚动动画
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        fadeElements.forEach(element => {
+            observer.observe(element);
+        });
+
+        // 返回顶部按钮
+        const backToTopButton = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.add('opacity-0', 'invisible');
+                backToTopButton.classList.remove('opacity-100', 'visible');
+            }
+        });
+
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 3D汽车模型（简化版，实际项目中可使用Three.js加载真实3D模型）
+        function initCar3D() {
+            // 这里是简化版的3D汽车模型展示
+            // 实际项目中可以使用Three.js加载真实的3D汽车模型
+            console.log('3D模型初始化');
+            
+            // 模拟加载完成
+            setTimeout(() => {
+                const container = document.getElementById('car-3d-container');
+                container.innerHTML = `
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/45a882f264dd47129e4d2984fcdb13c9~tplv-a9rns2rl98-image.image?rcl=2025110719043878B15F328D3C4C9ADFBC&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765105550&x-signature=zZYKBi6uC9CzYEPUMtNw5DVtt9o%3D" alt="3D汽车模型" class="max-w-full max-h-full object-contain">
+                    </div>
+                    <div class="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                        <i class="fas fa-mouse mr-1"></i> 拖动鼠标旋转视角
+                    </div>
+                `;
+            }, 2000);
+        }
+
+        // 视频演示按钮
+        document.getElementById('play-video-btn').addEventListener('click', () => {
+            alert('视频演示功能即将上线，敬请期待！');
+        });
+
+        // 首屏背景动画
+        function initHeroBackground() {
+            const canvas = document.getElementById('hero-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置画布尺寸
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 粒子系统
+            const particles = [];
+            const particleCount = 100;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 1,
+                    color: `rgba(22, 93, 255, ${Math.random() * 0.5 + 0.1})`,
+                    speedX: Math.random() * 0.5 - 0.25,
+                    speedY: Math.random() * 0.5 - 0.25
+                });
+            }
+            
+            // 绘制粒子
+            function drawParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                    
+                    // 更新位置
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    
+                    // 边界检查
+                    if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+                });
+                
+                // 连接临近粒子
+                connectParticles();
+                
+                requestAnimationFrame(drawParticles);
+            }
+            
+            // 连接临近的粒子
+            function connectParticles() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(22, 93, 255, ${0.1 * (1 - dist/120)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            
+            drawParticles();
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 初始化首屏背景动画
+            initHeroBackground();
+            
+            // 初始化3D汽车模型（简化版）
+            initCar3D();
+            
+            // 初始化滚动动画
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // 数据统计数字动画
+            gsap.utils.toArray('.stat-number').forEach(number => {
+                gsap.fromTo(number, 
+                    { innerText: 0 },
+                    { 
+                        innerText: number.getAttribute('data-value'),
+                        duration: 2,
+                        ease: 'power1.out',
+                        snap: { innerText: 1 },
+                        onUpdate: function() {
+                            number.textContent = Math.ceil(this.targets()[0].innerText);
+                        },
+                        scrollTrigger: {
+                            trigger: number,
+                            start: 'top 80%',
+                            toggleActions: 'play none none none'
+                        }
+                    }
+                );
+            });
+        });
+    </script>
+</body>
+</html>
