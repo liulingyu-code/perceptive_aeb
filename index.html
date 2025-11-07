@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <!--触发部署-->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>秒懂·预见 - 新一代AEB全程速度安全管家</title>
@@ -1558,59 +1557,6 @@
             });
         });
 
-        // 安全速度对比图表
-        const speedChart = new Chart(
-            document.getElementById('speedChart'),
-            {
-                type: 'bar',
-                data: {
-                    labels: ['50m距离', '100m距离', '150m距离'],
-                    datasets: [
-                        {
-                            label: '干燥路面 (μ=0.8)',
-                            data: [60, 85, 105],
-                            backgroundColor: 'rgba(22, 93, 255, 0.8)',
-                        },
-                        {
-                            label: '雨天路面 (μ=0.4)',
-                            data: [42, 60, 73],
-                            backgroundColor: 'rgba(22, 93, 255, 0.5)',
-                        },
-                        {
-                            label: '冰雪路面 (μ=0.2)',
-                            data: [30, 42, 52],
-                            backgroundColor: 'rgba(22, 93, 255, 0.3)',
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + context.raw + ' km/h';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: '安全速度 (km/h)'
-                            }
-                        }
-                    }
-                }
-            }
-        );
-        
         // 安全速度计算功能
         document.getElementById('calcSafeSpeed').addEventListener('click', function() {
             const frictionCoeff = parseFloat(document.getElementById('frictionCoeff').value);
@@ -1626,14 +1572,14 @@
             
             // 显示结果
             document.getElementById('resultValue').textContent = vSafeKmh.toFixed(1);
-            
-            // 自动显示结果区域（如果之前隐藏）
-            document.getElementById('speedResult').classList.remove('hidden');
         });
         
         // 页面加载时自动计算一次默认值
         window.addEventListener('load', function() {
-            document.getElementById('calcSafeSpeed').click();
+            // 使用setTimeout确保DOM完全加载
+            setTimeout(function() {
+                document.getElementById('calcSafeSpeed').click();
+            }, 100);
         });
 
         // 合作表单提交
@@ -1722,11 +1668,6 @@
                 `;
             }, 2000);
         }
-
-        // 视频演示按钮
-        document.getElementById('play-video-btn').addEventListener('click', () => {
-            alert('视频演示功能即将上线，敬请期待！');
-        });
 
         // 首屏背景动画
         function initHeroBackground() {
@@ -1840,5 +1781,6 @@
     </script>
 </body>
 </html>
+
 
 
