@@ -563,7 +563,7 @@
                     </p>
                     <div class="bg-white p-4 rounded-lg shadow-sm mb-6">
                         <p class="font-medium mb-2">核心公式：</p>
-                        <p class="text-primary-500 font-mono text-lg">V<sub>safe</sub> = √(2×a<sub>max</sub>×d) / 1.15</p>
+                        <p class="text-primary-500 font-mono text-lg">V<sub>safe</sub> = √(2×a<sub>max</sub>×d) / 1.05</p>
                         <p class="text-sm text-dark/60 mt-2">
                             其中：a<sub>max</sub> = μ×g（μ为路面附着系数，g为重力加速度9.8m/s²），d为与前方障碍物距离
                         </p>
@@ -1568,7 +1568,7 @@
             const g = 9.8; // 重力加速度
             const aMax = frictionCoeff * g;
             const vSafeMps = Math.sqrt(2 * aMax * obstacleDist);
-            const vSafeKmh = vSafeMps * 3.6 / 1.15; // 转换为km/h并除以1.15
+            const vSafeKmh = vSafeMps * 3.6 / 1.05; // 转换为km/h并除以1.05
             
             // 显示结果
             document.getElementById('resultValue').textContent = vSafeKmh.toFixed(1);
@@ -1781,6 +1781,7 @@
     </script>
 </body>
 </html>
+
 
 
 
