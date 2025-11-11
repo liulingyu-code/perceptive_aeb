@@ -565,7 +565,7 @@
                         <p class="font-medium mb-2">核心公式：</p>
                         <p class="text-primary-500 font-mono text-lg">V<sub>safe</sub> = √(2×a<sub>max</sub>×d) / 1.05</p>
                         <p class="text-sm text-dark/60 mt-2">
-                            其中：a<sub>max</sub> = μ×g（μ为路面附着系数，g为重力加速度9.8m/s²），d为与前方障碍物距离
+                            其中：a<sub>max</sub> = μ×g（μ为路面附着系数，g为重力加速度9.8m/s²），d为与前方障碍物距离<br>1.05为当系统延迟为0.1秒时经过仿真验证能保证刹停的安全速度冗余系数<br>可以根据不同系统延迟时间修改冗余系数以适配各种车型
                         </p>
                     </div>
                     <ul class="space-y-3 text-dark/70">
@@ -712,22 +712,22 @@
                             <tbody>
                                 <tr class="border-b">
                                     <td class="p-3 font-medium">正常</td>
-                                    <td class="p-3 text-sm">V<sub>act</sub> ≤ 0.9×V<sub>safe</sub></td>
+                                    <td class="p-3 text-sm">V<sub>act</sub> ≤ 0.8×V<sub>safe</sub></td>
                                     <td class="p-3 text-sm">无干预，仅显示安全阈值</td>
                                 </tr>
                                 <tr class="border-b bg-gray-50/50">
                                     <td class="p-3 font-medium">1级（温和控速）</td>
-                                    <td class="p-3 text-sm">0.9×V<sub>safe</sub> ＜ V<sub>act</sub> ≤ V<sub>safe</sub></td>
+                                    <td class="p-3 text-sm">0.8×V<sub>safe</sub> ＜ 0.9×V<sub>act</sub> ≤ V<sub>safe</sub></td>
                                     <td class="p-3 text-sm">轻微降扭矩，仪表盘闪烁提醒</td>
                                 </tr>
                                 <tr class="border-b">
                                     <td class="p-3 font-medium">2级（强制控速）</td>
-                                    <td class="p-3 text-sm">V<sub>safe</sub> ＜ V<sub>act</sub> ＜ 1.1×V<sub>safe</sub></td>
+                                    <td class="p-3 text-sm">0.9×V<sub>safe</sub> ＜ V<sub>act</sub> ＜ V<sub>safe</sub></td>
                                     <td class="p-3 text-sm">轻度制动（<30%最大制动力）+ 语音提醒</td>
                                 </tr>
                                 <tr class="bg-gray-50/50">
                                     <td class="p-3 font-medium">3级（紧急制动）</td>
-                                    <td class="p-3 text-sm">V<sub>act</sub> ≥ 1.1×V<sub>safe</sub> 或 d快速减小</td>
+                                    <td class="p-3 text-sm">V<sub>act</sub> ≥ V<sub>safe</sub> 或 d快速减小</td>
                                     <td class="p-3 text-sm">100%制动力紧急制动，无法Override</td>
                                 </tr>
                             </tbody>
@@ -797,7 +797,7 @@
                 <div class="bg-white rounded-xl shadow-md overflow-hidden border-t-4 border-gray-300 transform hover:scale-105 transition-transform duration-300">
                     <div class="p-8">
                         <h3 class="text-xl font-semibold mb-2">基础版</h3>
-                        <p class="text-dark/60 mb-6">免费体验核心安全功能</p>
+                        <p class="text-dark/60 mb-6">核心安全功能</p>
                         <div class="mb-8">
                             <span class="text-4xl font-bold">¥0</span>
                             <span class="text-dark/60">/永久</span>
@@ -1563,7 +1563,7 @@
             const obstacleDist = parseFloat(document.getElementById('obstacleDist').value);
             
             // 计算安全速度
-            // V_safe = √(2×a_max×d) / 1.15
+            // V_safe = √(2×a_max×d) / 1.05
             // a_max = μ×g (g=9.8m/s²)
             const g = 9.8; // 重力加速度
             const aMax = frictionCoeff * g;
@@ -1781,7 +1781,3 @@
     </script>
 </body>
 </html>
-
-
-
-
